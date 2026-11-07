@@ -1,0 +1,7 @@
+server:
+  port: 8081
+
+# Propriedade customizada para demonstrar atualização dinâmica (@RefreshScope) sem reiniciar!
+smartshop:
+  mensagem-boas-vindas: "Bem-vindo ao Atendimento Inteligente SmartShop v1.0"
+  lambda-url: "http://localhost:8083/validarPedido"
