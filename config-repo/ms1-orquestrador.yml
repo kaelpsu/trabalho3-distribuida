@@ -3,5 +3,5 @@ server:
 
 # Propriedade customizada para demonstrar atualização dinâmica (@RefreshScope) sem reiniciar!
 smartshop:
-  mensagem-boas-vindas: "Bem-vindo ao Atendimento Inteligente SmartShop v1.0"
+  mensagem-boas-vindas: "Bem-vindo ao Atendimento Inteligente SmartShop v2.0"
   lambda-url: "http://localhost:8083/validarPedido"
