@@ -8,11 +8,13 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
-      routes:
-        - id: ms1-orquestrador-route
-          uri: lb://ms1-orquestrador
-          predicates:
-            - Path=/api/assistente/**
-          filters:
-            - AddRequestHeader=X-Gateway-Originated, SmartShop-Gateway
-            - AddResponseHeader=X-Response-Gateway, Processed-By-Spring-Cloud-Gateway
+      server:
+        webmvc:
+          routes:
+            - id: ms1-orquestrador-route
+              uri: lb://ms1-orquestrador
+              predicates:
+                - Path=/api/assistente/**
+              filters:
+                - AddRequestHeader=X-Gateway-Originated, SmartShop-Gateway
+                - AddResponseHeader=X-Response-Gateway, Processed-By-Spring-Cloud-Gateway

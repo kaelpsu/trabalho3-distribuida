@@ -1,7 +1,39 @@
 server:
   port: 8081
 
-# Propriedade customizada para demonstrar atualização dinâmica (@RefreshScope) sem reiniciar!
+# Propriedade customizada para demonstrar atualização dinâmica (@RefreshScope) sem reiniciar
 smartshop:
   mensagem-boas-vindas: "Bem-vindo ao Atendimento Inteligente SmartShop v2.0"
   lambda-url: "http://localhost:8083/validarPedido"
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ms2AiCircuitBreaker:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10              # Avalia as últimas 10 requisições
+        minimumNumberOfCalls: 5            # Precisa de pelo menos 5 chamadas para calcular a taxa de falha
+        failureRateThreshold: 50           # Abre o disjuntor se 50% ou mais falharem
+        waitDurationInOpenState: 15s       # Fica ABERTO por 15 segundos antes de testar a recuperação (HALF_OPEN)
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+  retry:
+    instances:
+      ms2AiRetry:
+        maxAttempts: 3                     # Tenta até 3 vezes antes de acionar o Fallback
+        waitDuration: 500ms                # Espera 500ms entre cada tentativa
+  
+  ratelimiter:
+    instances:
+      ms2AiClientRateLimiter:              # Rate Limiter no LADO CLIENTE (MS1)
+        limitForPeriod: 15                 # Permite até 15 requisições...
+        limitRefreshPeriod: 10s            # ...a cada janela de 10 segundos
+        timeoutDuration: 0s                # Se ultrapassar o limite, rejeita imediatamente sem esperar
+
+  bulkhead:
+    instances:
+      ms2AiBulkhead:
+        maxConcurrentCalls: 10             # Permite no máximo 10 chamadas simultâneas para o MS2
+        maxWaitDuration: 100ms
