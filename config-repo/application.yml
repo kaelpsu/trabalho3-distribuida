@@ -10,7 +10,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus,refresh,metrics,circuitbreakers,ratelimiters,bulkheads
+        include: health,info,prometheus,refresh,metrics,circuitbreakers,ratelimiters,bulkheads, chaosmonkey
   endpoint:
     health:
       show-details: always
@@ -20,3 +20,19 @@ management:
   zipkin:
     tracing:
       endpoint: http://localhost:9411/api/v2/spans
+
+# configuração base do Chaos Monkey para os serviços que rodarem com perfil 'chaos-monkey'
+chaos:
+  monkey:
+    enabled: false                       # Começa DESLIGADO para garantir 0% de erro no início!
+    watcher:
+      service: true                      # Vigia todas as classes @Service
+      rest-controller: true              # Vigia todas as classes @RestController
+      controller: true                   # Vigia todas as classes @Controller
+    assaults:
+      level: 1                           # Nível 1 = ataca 1 a cada 1 requisição quando ligado (100% visível!)
+      latency-active: false
+      latency-range-start: 1000
+      latency-range-end: 3000
+      exceptions-active: true            # Quando ligado, lança exceção nas chamadas vigiadas
+      kill-application-active: false
