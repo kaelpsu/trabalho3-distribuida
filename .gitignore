@@ -1,5 +1,12 @@
 old/
 
+**/target/
+**/.mvn/
+**/.settings/
+**/.classpath
+**/.project
+**/.vscode/
+
 ### Java ###
 
 # Compiled class file

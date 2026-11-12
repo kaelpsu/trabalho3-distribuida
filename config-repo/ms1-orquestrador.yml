@@ -24,7 +24,10 @@ resilience4j:
       ms2AiRetry:
         maxAttempts: 3                     # Tenta até 3 vezes antes de acionar o Fallback
         waitDuration: 500ms                # Espera 500ms entre cada tentativa
-  
+        ignoreExceptions:
+          # Se o Circuit Breaker ja estiver ABERTO, nao tenta 3 vezes: vai direto para o Fallback!
+          - io.github.resilience4j.circuitbreaker.CallNotPermittedException
+
   ratelimiter:
     instances:
       ms2AiClientRateLimiter:              # Rate Limiter no LADO CLIENTE (MS1)
