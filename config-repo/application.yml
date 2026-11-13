@@ -14,11 +14,10 @@ management:
   endpoint:
     health:
       show-details: always
-      access: unrestricted
     chaosmonkey:
-      access: unrestricted
+      enabled: true
     chaosmonkeyjmx:
-      access: unrestricted
+      enabled: true
   tracing:
     sampling:
       probability: 1.0
