@@ -1,0 +1,13 @@
+services:
+  vault:
+    image: hashicorp/vault:2.2.1
+    container_name: vault-trabalho3
+    ports:
+      - "8200:8200" # mapeia a porta 8200 do container para a 8200 da maquina host
+    environment:
+      # define um token fixo de acesso para ambiente de desenvolvimento
+      VAULT_DEV_ROOT_TOKEN_ID: "root-token-trabalho3"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    cap_add:
+      # permissão de memória exigida pelo Vault para evitar que segredos vão para o swap do disco
+      - IPC_LOCK
