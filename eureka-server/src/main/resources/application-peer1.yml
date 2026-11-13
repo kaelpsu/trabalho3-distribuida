@@ -1,0 +1,13 @@
+server:
+  port: 8761
+
+# configurado para testes locais
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://127.0.0.1:8762/eureka/
