@@ -16,10 +16,8 @@ management:
       show-details: always
       access: unrestricted
     chaosmonkey:
-      enabled: true
       access: unrestricted
     chaosmonkeyjmx:
-      enabled: true
       access: unrestricted
   tracing:
     sampling:
