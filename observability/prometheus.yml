@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 5s # para ficar rápido na apresentação
+
+scrape_configs:
+  - job_name: 'ms1-orquestrador'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8081']
+
+  - job_name: 'ms2-ai-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8082']

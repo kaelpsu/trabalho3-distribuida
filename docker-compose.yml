@@ -11,3 +11,18 @@ services:
     cap_add:
       # permissão de memória exigida pelo Vault para evitar que segredos vão para o swap do disco
       - IPC_LOCK
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus-trabalho3
+    network_mode: "host" # Permite acessar localhost:8081 e 8082 diretamente no Linux (expõe a porta 9090)
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-trabalho3
+    network_mode: "host" # Expõe o painel do Grafana na porta 3000 e conversa com o Prometheus em localhost:9090
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
