@@ -17,7 +17,7 @@ services:
     container_name: prometheus-trabalho3
     network_mode: "host"
     volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability:/etc/prometheus:ro
       - prometheus_data:/prometheus
 
   grafana:
@@ -28,7 +28,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
-      - grafana_data:/var/lib/grafana # Salva seus Dashboards e Data Sources permanentemente!
+      - grafana_data:/var/lib/grafana # Salva Dashboards e Data Sources permanentemente
 
   zipkin:
     image: openzipkin/zipkin:latest
