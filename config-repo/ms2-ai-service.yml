@@ -5,6 +5,17 @@ spring:
   graphql:
     graphiql:
       enabled: true
+  ai:
+    chat:
+      observations:
+        log-prompt: true # Exibe o conteudo completo do prompt e da seção MEMORY no terminal
+    openai:
+      api-key: ${gemini.api.key}
+      base-url: https://generativelanguage.googleapis.com/v1beta/openai
+      chat:
+        completions-path: /chat/completions
+        options:
+          model: ${gemini.model:gemini-3.8-flash}
 
 resilience4j:
   ratelimiter:
