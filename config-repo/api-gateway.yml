@@ -18,3 +18,29 @@ spring:
               filters:
                 - AddRequestHeader=X-Gateway-Originated, SmartShop-Gateway
                 - AddResponseHeader=X-Response-Gateway, Processed-By-Spring-Cloud-Gateway
+                - name: CircuitBreaker
+                  args:
+                    id: ms1CircuitBreaker
+                    fallbackUri: forward:/fallback/atendimento
+                    statusCodes:
+                      - 500
+                      - 502
+                      - 503
+                      - 504
+    circuitbreaker:
+      resilience4j:
+        disable-thread-pool: true
+        disable-time-limiter: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ms1CircuitBreaker:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 15s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
