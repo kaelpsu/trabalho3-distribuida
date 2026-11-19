@@ -1,0 +1,17 @@
+type Query {
+    processarAtendimento(
+        clienteId: String!
+        pedidoId: String!
+        pergunta: String!
+        protocolo: String!
+    ): RespostaAtendimento!
+}
+
+type RespostaAtendimento {
+    protocolo: String!
+    clienteId: String!
+    pedidoId: String!
+    respostaIa: String!
+    modeloUtilizado: String!
+    apiKeyMascarada: String!
+}
