@@ -19,13 +19,30 @@ resilience4j:
         permittedNumberOfCallsInHalfOpenState: 3
         automaticTransitionFromOpenToHalfOpenEnabled: true
 
+      ms3LambdaCircuitBreaker:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10              # Avalia as últimas 10 requisições
+        minimumNumberOfCalls: 5            # Precisa de pelo menos 5 chamadas para calcular a taxa de falha
+        failureRateThreshold: 50           # Abre o disjuntor se 50% ou mais falharem
+        waitDurationInOpenState: 15s       # Fica ABERTO por 15 segundos antes de testar a recuperação (HALF_OPEN)
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
   retry:
     instances:
       ms2AiRetry:
         maxAttempts: 3                     # Tenta até 3 vezes antes de acionar o Fallback
         waitDuration: 500ms                # Espera 500ms entre cada tentativa
         ignoreExceptions:
-          # Se o Circuit Breaker ja estiver ABERTO, nao tenta 3 vezes: vai direto para o Fallback!
+          # Se o Circuit Breaker ja estiver ABERTO, nao tenta 3 vezes: vai direto para o Fallback
+          - io.github.resilience4j.circuitbreaker.CallNotPermittedException
+
+      ms3LambdaRetry:
+        maxAttempts: 3                     # Tenta até 3 vezes antes de acionar o Fallback
+        waitDuration: 500ms                # Espera 500ms entre cada tentativa
+        ignoreExceptions:
+          # Se o Circuit Breaker ja estiver ABERTO, nao tenta 3 vezes: vai direto para o Fallback
           - io.github.resilience4j.circuitbreaker.CallNotPermittedException
 
   ratelimiter:
