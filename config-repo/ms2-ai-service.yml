@@ -9,13 +9,15 @@ spring:
     chat:
       observations:
         log-prompt: true # Exibe o conteudo completo do prompt e da seção MEMORY no terminal
-    openai:
-      api-key: ${gemini.api.key}
-      base-url: https://generativelanguage.googleapis.com/v1beta/openai
-      chat:
-        completions-path: /chat/completions
-        options:
-          model: ${gemini.model:gemini-3.8-flash}
+    google:
+      genai:
+        api-key: ${gemini.api-key}
+        chat:
+          model: ${gemini.model:gemini-3.5-flash-lite}
+        embedding:
+          api-key: ${gemini.api-key}
+          text:
+            model: gemini-embedding-001
 
 resilience4j:
   ratelimiter:
