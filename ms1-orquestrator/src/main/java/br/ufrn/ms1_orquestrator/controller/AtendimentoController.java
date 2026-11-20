@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/assistente")
-@RefreshScope // Permite atualizar propriedades do Config Server sem reiniciar o MS1
+@RefreshScope // permite atualizar propriedades do Config Server sem reiniciar o MS1
 public class AtendimentoController {
 
     private final AtendimentoOrquestradorService orquestradorService;
 
-    // Valor injetado diretamente do arquivo config-repo/ms1-orquestrador.yml via Config Server
+    // valor injetado diretamente do arquivo config-repo/ms1-orquestrador.yml via Config Server
     @Value("${smartshop.mensagem-boas-vindas:Mensagem Padrao Local}")
     private String mensagemBoasVindas;
 
@@ -28,13 +28,13 @@ public class AtendimentoController {
         this.orquestradorService = orquestradorService;
     }
 
-    // Endpoint simples para testar rapidamente a atualizacao dinamica do Config Server
+    // endpoint simples para testar rapidamente a atualizacao dinamica do Config Server
     @GetMapping("/info")
     public String obterInfoConfiguracao() {
         return mensagemBoasVindas;
     }
 
-    // Endpoint principal que coordena a chamada GraphQL para o Microservico 2
+    // endpoint principal que coordena a chamada GraphQL para o Microservico 2 e invocação do ms3
     @PostMapping("/atendimento")
     public AtendimentoResponse realizarAtendimento(@RequestBody AtendimentoRequest request) {
         // invoca ms3
