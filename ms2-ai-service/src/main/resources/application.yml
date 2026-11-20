@@ -6,10 +6,10 @@ spring:
   config:
     import:
       - optional:vault://
-      - configserver:http://localhost:8888
+      - configserver:${CONFIG_SERVER_URI:http://localhost:8888}
   cloud:
     config:
-      uri: http://localhost:8888
+      uri: ${CONFIG_SERVER_URI:http://localhost:8888}
       request-connect-timeout: 5000
       request-read-timeout: 5000
       fail-fast: true
@@ -19,11 +19,11 @@ spring:
         max-interval: 2000
         multiplier: 1.1
     vault:
-      host: localhost
-      port: 8200
-      scheme: http
+      host: ${VAULT_HOST:localhost}
+      port: ${VAULT_PORT:8200}
+      scheme: ${VAULT_SCHEME:http}
       authentication: TOKEN
-      token: root-token-trabalho3
+      token: ${VAULT_TOKEN:root-token-trabalho3}
       kv:
         enabled: true
         backend: secret

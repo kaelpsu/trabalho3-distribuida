@@ -1,13 +1,12 @@
 server:
-  port: 8761
+  port: ${SERVER_PORT:8761}
 
-# configurado para testes locais
 eureka:
   instance:
-    hostname: localhost
-    prefer-ip-address: false
+    hostname: ${EUREKA_PEER1_HOST:localhost}
+    prefer-ip-address: ${EUREKA_PREFER_IP:false}
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://127.0.0.1:8762/eureka/
+      defaultZone: http://${EUREKA_PEER2_HOST:127.0.0.1}:${EUREKA_PEER2_PORT:8762}/eureka/

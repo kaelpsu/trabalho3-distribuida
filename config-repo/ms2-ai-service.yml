@@ -8,7 +8,7 @@ spring:
   ai:
     chat:
       observations:
-        log-prompt: true # Exibe o conteudo completo do prompt e da seção MEMORY no terminal
+        log-prompt: true # exibe o conteudo completo do prompt e da seção MEMORY no terminal
     google:
       genai:
         api-key: ${gemini.api-key}
@@ -22,7 +22,7 @@ spring:
 resilience4j:
   ratelimiter:
     instances:
-      ms2AiServerRateLimiter:              # Rate Limiter no LADO SERVIDOR (MS2)
-        limitForPeriod: 20                 # Aceita até 20 requisições...
-        limitRefreshPeriod: 10s            # ...a cada janela de 10 segundos
+      ms2AiServerRateLimiter:
+        limitForPeriod: 20                 # aceita até 20 requisições
+        limitRefreshPeriod: 10s            # a cada janela de 10 segundos
         timeoutDuration: 0s

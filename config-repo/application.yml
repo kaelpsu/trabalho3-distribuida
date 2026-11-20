@@ -2,7 +2,7 @@
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/,http://localhost:8762/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://localhost:8761/eureka/,http://localhost:8762/eureka/}
   instance:
     prefer-ip-address: true
 
@@ -16,33 +16,31 @@ management:
       show-details: always
     chaosmonkey:
       enabled: true
-    chaosmonkeyjmx:
-      enabled: true
   tracing:
     sampling:
       probability: 1.0
     export:
       zipkin:
-        endpoint: http://localhost:9411/api/v2/spans
-  observations:
+        endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
+  observations: # rotulos para zipkin
     key-values:
       application: ${spring.application.name}
-  metrics:
+  metrics: # rotulos para prometheus / grafana
     tags:
       application: ${spring.application.name}
 
 # configuração base do Chaos Monkey para os serviços que rodarem com perfil 'chaos-monkey'
 chaos:
   monkey:
-    enabled: false                       # Começa DESLIGADO para garantir 0% de erro no início!
+    enabled: false                       # começa DESLIGADO para garantir 0% de erro no início
     watcher:
-      service: true                      # Vigia todas as classes @Service
-      rest-controller: true              # Vigia todas as classes @RestController
-      controller: true                   # Vigia todas as classes @Controller
+      service: true                      # vigia todas as classes @Service
+      rest-controller: true              # vigia todas as classes @RestController
+      controller: true                   # vigia todas as classes @Controller
     assaults:
-      level: 1                           # Nível 1 = ataca 1 a cada 1 requisição quando ligado (100% visível!)
+      level: 1                           # ataca 1 a cada 1 requisição quando ligado (100% visível)
       latency-active: false
       latency-range-start: 1000
       latency-range-end: 3000
-      exceptions-active: true            # Quando ligado, lança exceção nas chamadas vigiadas
+      exceptions-active: true            # quando ligado, lança exceção nas chamadas vigiadas
       kill-application-active: false
