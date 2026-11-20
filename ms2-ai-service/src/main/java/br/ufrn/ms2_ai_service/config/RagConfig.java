@@ -28,12 +28,12 @@ public class RagConfig {
         log.info("Inicializando VectorStore em memoria (RAG) com o arquivo politica_smartshop.txt...");
         SimpleVectorStore vectorStore = SimpleVectorStore.builder(embeddingModel).build();
 
+        // leitura do txt rag
         TextReader textReader = new TextReader(documentoRag);
-
         List<Document> documentosLidos = textReader.get();
 
+        // divisão em chunks
         TokenTextSplitter splitter = TokenTextSplitter.builder().build();
-
         List<Document> documentos = splitter.apply(documentosLidos);
 
         vectorStore.add(documentos);

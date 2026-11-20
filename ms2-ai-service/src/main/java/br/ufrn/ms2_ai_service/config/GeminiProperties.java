@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "gemini")
+@ConfigurationProperties(prefix = "gemini") // instrui o Spring Boot a buscar qualquer propriedade carregada no ambiente que comece com o prefixo gemini e injetá-la nos campos da classe
 public class GeminiProperties {
 
     private String apiKey;
