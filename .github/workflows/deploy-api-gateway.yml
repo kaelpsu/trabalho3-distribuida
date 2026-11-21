@@ -1,0 +1,50 @@
+name: Deploy API Gateway
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api-gateway/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache Maven (~/.m2/repository)
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-api-gateway-${{ hashFiles('api-gateway/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-api-gateway-
+            ${{ runner.os }}-maven-
+
+      - name: Compilar e empacotar api-gateway
+        run: mvn -B -ntp -f api-gateway/pom.xml clean package -DskipTests
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Implantar JAR diretamente no Gateway Bastion
+        run: |
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=20"
+          BASTION="ec2-user@${{ secrets.BASTION_HOST }}"
+
+          scp $SSH_OPTS api-gateway/target/api_gateway-0.0.1-SNAPSHOT.jar \
+            "$BASTION:/home/ec2-user/app/smartshop/app.jar.tmp"
+          ssh $SSH_OPTS "$BASTION" \
+            "mv /home/ec2-user/app/smartshop/app.jar.tmp /home/ec2-user/app/smartshop/app.jar && sudo /var/lib/cloud/scripts/per-boot/start-smartshop.sh"

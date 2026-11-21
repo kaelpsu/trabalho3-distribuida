@@ -1,0 +1,53 @@
+name: Deploy Eureka Server (Peer 1 e Peer 2)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'eureka-server/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache Maven (~/.m2/repository)
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-eureka-server-${{ hashFiles('eureka-server/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-eureka-server-
+            ${{ runner.os }}-maven-
+
+      - name: Compilar e empacotar eureka-server
+        run: mvn -B -ntp -f eureka-server/pom.xml clean package -DskipTests
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Implantar no Eureka Peer 1 (10.30.1.11) e Peer 2 (10.30.1.12)
+        run: |
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=20"
+          BASTION="ec2-user@${{ secrets.BASTION_HOST }}"
+          JAR="eureka-server/target/eureka_server-0.0.1-SNAPSHOT.jar"
+
+          for TARGET_IP in 10.30.1.11 10.30.1.12; do
+            echo "=== Implantando Eureka em $TARGET_IP ==="
+            scp $SSH_OPTS -o "ProxyJump=$BASTION" "$JAR" "ec2-user@$TARGET_IP:/home/ec2-user/app/smartshop/app.jar.tmp"
+            ssh $SSH_OPTS -J "$BASTION" "ec2-user@$TARGET_IP" \
+              "mv /home/ec2-user/app/smartshop/app.jar.tmp /home/ec2-user/app/smartshop/app.jar && sudo /var/lib/cloud/scripts/per-boot/start-smartshop.sh"
+          done

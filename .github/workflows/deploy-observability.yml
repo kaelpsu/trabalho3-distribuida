@@ -1,0 +1,40 @@
+name: Deploy Observability and Vault
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docker-compose.yml'
+      - 'observability/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Enviar docker-compose.yml e observability via Bastion para 10.30.1.10
+        run: |
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=20"
+          DEST="ec2-user@10.30.1.10"
+          BASTION="ec2-user@${{ secrets.BASTION_HOST }}"
+
+          ssh $SSH_OPTS -J "$BASTION" "$DEST" \
+            "mkdir -p /home/ec2-user/app/smartshop && rm -rf /home/ec2-user/app/smartshop/observability"
+          scp $SSH_OPTS -o "ProxyJump=$BASTION" docker-compose.yml "$DEST:/home/ec2-user/app/smartshop/docker-compose.yml"
+          scp -r $SSH_OPTS -o "ProxyJump=$BASTION" observability "$DEST:/home/ec2-user/app/smartshop/"
+
+      - name: Subir containers e gravar segredo no Vault
+        run: |
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=20"
+          ssh $SSH_OPTS -J "ec2-user@${{ secrets.BASTION_HOST }}" "ec2-user@10.30.1.10" \
+            "sudo /var/lib/cloud/scripts/per-boot/start-smartshop.sh"

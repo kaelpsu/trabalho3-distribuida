@@ -1,0 +1,51 @@
+name: Deploy MS2 AI Service
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ms2-ai-service/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache Maven (~/.m2/repository)
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-ms2-ai-service-${{ hashFiles('ms2-ai-service/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-ms2-ai-service-
+            ${{ runner.os }}-maven-
+
+      - name: Compilar e empacotar ms2-ai-service
+        run: mvn -B -ntp -f ms2-ai-service/pom.xml clean package -DskipTests
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Implantar JAR via Bastion em 10.30.1.16
+        run: |
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=20"
+          BASTION="ec2-user@${{ secrets.BASTION_HOST }}"
+          DEST="ec2-user@10.30.1.16"
+
+          scp $SSH_OPTS -o "ProxyJump=$BASTION" ms2-ai-service/target/ms2_ai_service-0.0.1-SNAPSHOT.jar \
+            "$DEST:/home/ec2-user/app/smartshop/app.jar.tmp"
+          ssh $SSH_OPTS -J "$BASTION" "$DEST" \
+            "mv /home/ec2-user/app/smartshop/app.jar.tmp /home/ec2-user/app/smartshop/app.jar && sudo /var/lib/cloud/scripts/per-boot/start-smartshop.sh"
