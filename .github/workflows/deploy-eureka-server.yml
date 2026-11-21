@@ -57,5 +57,5 @@ jobs:
             echo "=== Implantando Eureka em $TARGET_IP ==="
             scp $SSH_OPTS -o "ProxyJump=$BASTION" "$JAR" "ec2-user@$TARGET_IP:/home/ec2-user/app/smartshop/app.jar.tmp"
             ssh $SSH_OPTS -J "$BASTION" "ec2-user@$TARGET_IP" \
-              "mv /home/ec2-user/app/smartshop/app.jar.tmp /home/ec2-user/app/smartshop/app.jar && sudo /var/lib/cloud/scripts/per-boot/start-smartshop.sh"
+              "mv /home/ec2-user/app/smartshop/app.jar.tmp /home/ec2-user/app/smartshop/app.jar && sudo sh -c 'nohup setsid /var/lib/cloud/scripts/per-boot/start-smartshop.sh </dev/null >/home/ec2-user/app/smartshop/deploy.log 2>&1 &'"
           done

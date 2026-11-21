@@ -55,4 +55,4 @@ jobs:
           scp $SSH_OPTS api-gateway/target/api_gateway-0.0.1-SNAPSHOT.jar \
             "$BASTION:/home/ec2-user/app/smartshop/app.jar.tmp"
           ssh $SSH_OPTS "$BASTION" \
-            "mv /home/ec2-user/app/smartshop/app.jar.tmp /home/ec2-user/app/smartshop/app.jar && sudo /var/lib/cloud/scripts/per-boot/start-smartshop.sh"
+            "mv /home/ec2-user/app/smartshop/app.jar.tmp /home/ec2-user/app/smartshop/app.jar && sudo sh -c 'nohup setsid /var/lib/cloud/scripts/per-boot/start-smartshop.sh </dev/null >/home/ec2-user/app/smartshop/deploy.log 2>&1 &'"
