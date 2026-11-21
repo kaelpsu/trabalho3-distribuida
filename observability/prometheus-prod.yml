@@ -5,9 +5,9 @@ scrape_configs:
   - job_name: 'eureka-microservices'
     metrics_path: '/actuator/prometheus'
     eureka_sd_configs:
-      # IPs das instâncias onde rodam o Eureka Peer 1 e Peer 2
-      - server: 'http://localhost:8761/eureka'
-      - server: 'http://localhost:8762/eureka'
+      # IPs privados na VPC das instâncias onde rodam o Eureka Peer 1 e Peer 2
+      - server: 'http://10.30.1.11:8761/eureka'
+      - server: 'http://10.30.1.12:8762/eureka'
     relabel_configs:
       # usa o nome da aplicação no Eureka como label 'job'
       - source_labels: [__meta_eureka_app_name]
