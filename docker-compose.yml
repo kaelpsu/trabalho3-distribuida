@@ -36,6 +36,8 @@ services:
   zipkin:
     image: openzipkin/zipkin:latest
     container_name: zipkin-trabalho3
+    environment:
+      - JAVA_OPTS=-Xms128m -Xmx256m
     ports:
       - "9411:9411"
 
