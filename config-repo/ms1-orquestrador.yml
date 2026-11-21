@@ -17,6 +17,10 @@ resilience4j:
         waitDurationInOpenState: 15s       # fica aberto por 15 segundos antes de testar a recuperação (HALF_OPEN)
         permittedNumberOfCallsInHalfOpenState: 3
         automaticTransitionFromOpenToHalfOpenEnabled: true
+        ignoreExceptions:
+          # Rejeições locais do Client-side RateLimiter / Bulkhead devem ir para fallback sem abrir o disjuntor
+          - io.github.resilience4j.ratelimiter.RequestNotPermitted
+          - io.github.resilience4j.bulkhead.BulkheadFullException
 
       ms3LambdaCircuitBreaker:
         registerHealthIndicator: true
@@ -34,8 +38,10 @@ resilience4j:
         maxAttempts: 3                     # tenta até 3 vezes antes de acionar o Fallback
         waitDuration: 500ms                # espera 500ms entre cada tentativa
         ignoreExceptions:
-          # se o Circuit Breaker ja estiver aberto, nao tenta 3 vezes: vai direto para o Fallback
+          # Se o Circuit Breaker, RateLimiter client-side ou Bulkhead bloquearem, vai direto para o Fallback
           - io.github.resilience4j.circuitbreaker.CallNotPermittedException
+          - io.github.resilience4j.ratelimiter.RequestNotPermitted
+          - io.github.resilience4j.bulkhead.BulkheadFullException
 
       ms3LambdaRetry:
         maxAttempts: 3
@@ -45,7 +51,7 @@ resilience4j:
 
   ratelimiter:
     instances:
-      ms2AiClientRateLimiter:
+      ms2AiClientRateLimiter:              # Rate Limiter CLIENT-SIDE no MS1 (protege chamadas ao MS2)
         limitForPeriod: 15                 # permite até 15 requisições
         limitRefreshPeriod: 10s            # a cada janela de 10 segundos
         timeoutDuration: 0s                # se ultrapassar o limite, rejeita imediatamente sem esperar

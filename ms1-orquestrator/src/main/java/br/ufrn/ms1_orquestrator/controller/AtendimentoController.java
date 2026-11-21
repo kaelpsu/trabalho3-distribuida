@@ -24,6 +24,10 @@ public class AtendimentoController {
     @Value("${smartshop.mensagem-boas-vindas:Mensagem Padrao Local}")
     private String mensagemBoasVindas;
 
+    // feature flag global via config-repo/application.yml para desativar resiliencia em testes de carga
+    @Value("${smartshop.resiliencia.ativa:true}")
+    private boolean resilienciaAtiva;
+
     public AtendimentoController(AtendimentoOrquestradorService orquestradorService) {
         this.orquestradorService = orquestradorService;
     }
@@ -38,7 +42,9 @@ public class AtendimentoController {
     @PostMapping("/atendimento")
     public AtendimentoResponse realizarAtendimento(@RequestBody AtendimentoRequest request) {
         // invoca ms3
-        var resultadoValidacao = orquestradorService.acionarLambdaValidacao(request);
+        var resultadoValidacao = resilienciaAtiva
+                ? orquestradorService.acionarLambdaValidacao(request)
+                : orquestradorService.acionarLambdaValidacaoSemResiliencia(request);
 
         if (!resultadoValidacao.pedidoValido()) {
             return new AtendimentoResponse(
@@ -57,11 +63,18 @@ public class AtendimentoController {
         }
 
         //invoca ms2
-        RespostaAtendimentoMs2 respostaMs2 = orquestradorService.consultarAssistenteIa(request, resultadoValidacao);
+        RespostaAtendimentoMs2 respostaMs2 = resilienciaAtiva
+                ? orquestradorService.consultarAssistenteIa(request, resultadoValidacao)
+                : orquestradorService.consultarAssistenteIaSemResiliencia(request, resultadoValidacao);
 
-        String origem = "FALLBACK_MODO_OFFLINE".equals(respostaMs2.modeloUtilizado())
-                ? "RESPOSTA_DE_FALLBACK_RESILIENCE4J"
-                : "COMUNICACAO_GRAPHQL_SUCESSO";
+        String origem;
+        if ("FALLBACK_MODO_OFFLINE".equals(respostaMs2.modeloUtilizado())) {
+            origem = "RESPOSTA_DE_FALLBACK_RESILIENCE4J";
+        } else if ("GEMINI-MOCK-MODE".equals(respostaMs2.modeloUtilizado())) {
+            origem = "COMUNICACAO_GRAPHQL_MOCK_IA";
+        } else {
+            origem = "COMUNICACAO_GRAPHQL_SUCESSO";
+        }
 
         return new AtendimentoResponse(
                 mensagemBoasVindas,

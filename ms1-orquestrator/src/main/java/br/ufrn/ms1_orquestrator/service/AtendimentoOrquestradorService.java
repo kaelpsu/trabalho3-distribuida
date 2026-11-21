@@ -32,6 +32,10 @@ public class AtendimentoOrquestradorService {
     @CircuitBreaker(name = "ms3LambdaCircuitBreaker")
     @Retry(name = "ms3LambdaRetry", fallbackMethod = "fallbackValidacaoLambda")
     public ValidacaoLambdaResponse acionarLambdaValidacao(AtendimentoRequest request) {
+        return acionarLambdaValidacaoSemResiliencia(request);
+    }
+
+    public ValidacaoLambdaResponse acionarLambdaValidacaoSemResiliencia(AtendimentoRequest request) {
         log.info("Acionando MS3 (Lambda Serverless) via HTTP Interface para o pedido: {}", request.pedidoId());
         return lambdaValidacaoClient.validarPedido(
             new ValidacaoLambdaRequest(request.clienteId(), request.pedidoId())
@@ -55,6 +59,10 @@ public class AtendimentoOrquestradorService {
     @RateLimiter(name = "ms2AiClientRateLimiter")
     @Bulkhead(name = "ms2AiBulkhead")
     public RespostaAtendimentoMs2 consultarAssistenteIa(AtendimentoRequest request, ValidacaoLambdaResponse validacao) {
+        return consultarAssistenteIaSemResiliencia(request, validacao);
+    }
+
+    public RespostaAtendimentoMs2 consultarAssistenteIaSemResiliencia(AtendimentoRequest request, ValidacaoLambdaResponse validacao) {
         log.info("Enviando consulta GraphQL para o ms2-ai-service. Pedido: {}, Protocolo: {}",
                 request.pedidoId(), validacao.protocolo());
 
