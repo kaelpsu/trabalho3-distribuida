@@ -43,7 +43,8 @@ public class AtendimentoOrquestradorService {
     }
 
     public ValidacaoLambdaResponse fallbackValidacaoLambda(AtendimentoRequest request, Throwable erro) {
-        log.warn("FALLBACK ACIONADO no MS1 ao chamar MS3 (Lambda)! Motivo: {}", erro.getMessage());
+        log.warn("FALLBACK ACIONADO no MS1 ao chamar MS3 (Lambda)! Tipo={}, Motivo={}",
+                erro.getClass().getSimpleName(), erro.getMessage());
 
         String sufixo = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         return new ValidacaoLambdaResponse(
@@ -96,7 +97,8 @@ public class AtendimentoOrquestradorService {
     public RespostaAtendimentoMs2 fallbackAtendimentoMs2(
             AtendimentoRequest request, ValidacaoLambdaResponse validacao, Throwable erro) {
 
-        log.warn("FALLBACK ACIONADO no MS1! Motivo da falha ao chamar MS2: {}", erro.getMessage());
+        log.warn("FALLBACK ACIONADO no MS1 ao chamar MS2! Tipo={}, Motivo={}",
+                erro.getClass().getSimpleName(), erro.getMessage());
 
         String protocolo = validacao.protocolo();
         String mensagemContingencia = String.format(

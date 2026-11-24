@@ -108,6 +108,9 @@ public class AssistenteIaService {
                 ? geminiProperties.getModel()
                 : "MODELO_NAO_ENCONTRADO_NO_VAULT";
 
+        log.info("Resposta gerada pelo Gemini - modelo={}, chaveVault={}, clienteId={}, protocolo={}",
+                modelo, chaveMascarada, clienteId, protocolo);
+
         return new RespostaAtendimento(
                 protocolo,
                 clienteId,

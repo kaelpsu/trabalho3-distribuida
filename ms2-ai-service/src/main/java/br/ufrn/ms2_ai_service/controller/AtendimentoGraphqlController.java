@@ -35,6 +35,9 @@ public class AtendimentoGraphqlController {
             @Argument String pergunta,
             @Argument String protocolo) {
 
+        log.info("GraphQL processarAtendimento recebido - clienteId={}, pedidoId={}, protocolo={}, resilienciaAtiva={}",
+                clienteId, pedidoId, protocolo, resilienciaAtiva);
+
         return resilienciaAtiva
                 ? assistenteIaService.gerarRespostaAtendimentoComRateLimiter(clienteId, pedidoId, pergunta, protocolo)
                 : assistenteIaService.gerarRespostaAtendimento(clienteId, pedidoId, pergunta, protocolo);

@@ -56,6 +56,8 @@ public class GatewayServerRateLimiterFilter extends OncePerRequestFilter {
 
         boolean resilienciaAtiva = environment.getProperty("smartshop.resiliencia.ativa", Boolean.class, true);
         sincronizarCircuitBreakerGateway(resilienciaAtiva);
+        log.info("API Gateway recebeu {} {} (resilienciaAtiva={})",
+                request.getMethod(), request.getRequestURI(), resilienciaAtiva);
 
         if (!resilienciaAtiva) {
             filterChain.doFilter(request, response);
