@@ -39,7 +39,7 @@ resilience4j:
     instances:
       gatewayServerRateLimiter:
         limitForPeriod: 30                 # aceita até 30 requisições na borda
-        limitRefreshPeriod: 10s            # a cada janela de 10 segundos
+        limitRefreshPeriod: 15s            # a cada janela de 10 segundos
         timeoutDuration: 0s                # rejeita imediatamente com HTTP 429 (too many requests) se exceder
 
   circuitbreaker:

@@ -53,11 +53,11 @@ resilience4j:
     instances:
       ms2AiClientRateLimiter:              # Rate Limiter CLIENT-SIDE no MS1 (protege chamadas ao MS2)
         limitForPeriod: 15                 # permite até 15 requisições
-        limitRefreshPeriod: 10s            # a cada janela de 10 segundos
+        limitRefreshPeriod: 15s            # a cada janela de 10 segundos
         timeoutDuration: 0s                # se ultrapassar o limite, rejeita imediatamente sem esperar
 
   bulkhead:
     instances:
       ms2AiBulkhead:
-        maxConcurrentCalls: 10             # permite no máximo 10 chamadas simultâneas para o MS2
+        maxConcurrentCalls: 5             # permite no máximo 5 chamadas simultâneas para o MS2
         maxWaitDuration: 100ms

@@ -24,5 +24,5 @@ resilience4j:
     instances:
       ms2AiServerRateLimiter:
         limitForPeriod: 20                 # aceita até 20 requisições
-        limitRefreshPeriod: 10s            # a cada janela de 10 segundos
+        limitRefreshPeriod: 15s            # a cada janela de 10 segundos
         timeoutDuration: 0s
