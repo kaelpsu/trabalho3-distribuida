@@ -2,7 +2,7 @@ server:
   port: 8081
 
 smartshop:
-  mensagem-boas-vindas: "Alterando mensagem" # propriedade customizada para demonstrar atualização dinâmica (@RefreshScope) sem reiniciar
+  mensagem-boas-vindas: "Boas vinda a smartshop!!" # propriedade customizada para demonstrar atualização dinâmica (@RefreshScope) sem reiniciar
   lambda-url: ${LAMBDA_URL:http://localhost:8083/validarPedido}
 
 resilience4j:
