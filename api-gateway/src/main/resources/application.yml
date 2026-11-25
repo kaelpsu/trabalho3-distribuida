@@ -1,6 +1,12 @@
 spring:
   application:
     name: api-gateway
+  http:
+    clients:
+      imperative:
+        factory: jdk
+      connect-timeout: 5s
+      read-timeout: 30s
   config:
     import: configserver:${CONFIG_SERVER_URI:http://localhost:8888}
   cloud:
