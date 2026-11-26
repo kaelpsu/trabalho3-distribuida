@@ -64,7 +64,6 @@ curl -s -X POST "http://$GW_IP:8080/api/assistente/atendimento" \
      - `AddRequestHeader=X-Gateway-Originated, SmartShop-Gateway`
      - `AddResponseHeader=X-Response-Gateway, Processed-By-Spring-Cloud-Gateway`
      - `CircuitBreaker` (`id: ms1CircuitBreaker`, `fallbackUri: forward:/fallback/atendimento`, disparado em status `500, 502, 503, 504`, apontando para [GatewayFallbackController.java](/api-gateway/src/main/java/br/ufrn/api_gateway/controller/GatewayFallbackController.java)).
-   - **Filtro customizado de borda:** [GatewayServerRateLimiterFilter.java](/api-gateway/src/main/java/br/ufrn/api_gateway/filter/GatewayServerRateLimiterFilter.java) (`OncePerRequestFilter`, `@Order(HIGHEST_PRECEDENCE)`), implementando Rate Limiter Server-side (`gatewayServerRateLimiter`).
    - [rota info](ms1-orquestrator/src/main/java/br/ufrn/ms1_orquestrator/controller/AtendimentoController.java#L40-L44)
 2. **Demonstração**:
 ```bash
@@ -179,6 +178,12 @@ curl -s -X POST "http://$GW_IP:8080/api/assistente/atendimento" \
 ```bash
 ssh -i "$KEY_PEM" "ec2-user@$OBS_IP" \
   "docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN='$VAULT_TOKEN' vault-trabalho3 vault kv get secret/ms2-ai-service"
+
+set -a && source /home/ec2-user/app/smartshop/.env && set +a
+
+docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN="$VAULT_TOKEN" vault-trabalho3 \
+  vault kv put secret/apresentacao usuario="admin-demo" senha="super-secreta-123"
+
 ```
 
 ---
@@ -213,13 +218,6 @@ ssh -i "$KEY_PEM" "ec2-user@$MS1_IP" \
 ```bash
 curl -s "http://$MS1_IP:8081/actuator/circuitbreakers" | python3 -m json.tool
 ```
-  
-4.Desligamento de instância
-```bash
-ssh -i "$KEY_PEM" -J "ec2-user@$GW_IP" ec2-user@10.30.1.15 \
-  'sudo pkill -f "^java.*/home/ec2-user/app/smartshop/app.jar" || true'
-```
-
 
 ### Fase C — Normalização e Recuperação do Sistema 
 1.Desligar o Chaos Monkey no MS2:
