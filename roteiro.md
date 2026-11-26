@@ -1,23 +1,7 @@
 ----
 
 # 0. Preparação
-
-### 0.1. IPs úteis
-
-```bash
-export KEY_PEM=~/Documentos/smartshop-key.pem
-export GW_IP="3.16.175.71"
-export OBS_IP="<IP_PUBLICO_OBSERVABILITY>"
-export EUREKA1_IP="<IP_PUBLICO_EUREKA_PEER1>"
-export EUREKA2_IP="<IP_PUBLICO_EUREKA_PEER2>"
-export CONFIG_IP="<IP_PUBLICO_CONFIG_SERVER>"
-export MS1_IP="<IP_PUBLICO_MS1>"
-export MS2_IP="<IP_PUBLICO_MS2>"
-export LAMBDA_URL="<OUTPUT_Ms3LambdaFunctionUrl>"   # termina com /
-export VAULT_TOKEN="root-token-trabalho3-apresentacao"
-```
-
-### 0.2. Rotas úteis
+### 0.1. Rotas úteis
 1. **Eureka Peer 1:** `http://<EUREKA1_IP>:8761`
 2. **Eureka Peer 2:** `http://<EUREKA2_IP>:8762`
 3. **Grafana:** `http://<OBS_IP>:3000` (com dashboard de Circuit Breaker, taxa de erro HTTP, latência e Rate Limiter aberto e em auto-refresh `5s`)
@@ -37,7 +21,6 @@ export VAULT_TOKEN="root-token-trabalho3-apresentacao"
 ---
 
 # 1. Roteiro da Apresentação
-
 ## Contexto
 - **SmartShop — Sistema de Atendimento Inteligente com IA** 
 - [Infraestrutura](/infra/README.md)
@@ -82,8 +65,16 @@ curl -s -X POST "http://$GW_IP:8080/api/assistente/atendimento" \
      - `AddResponseHeader=X-Response-Gateway, Processed-By-Spring-Cloud-Gateway`
      - `CircuitBreaker` (`id: ms1CircuitBreaker`, `fallbackUri: forward:/fallback/atendimento`, disparado em status `500, 502, 503, 504`, apontando para [GatewayFallbackController.java](/api-gateway/src/main/java/br/ufrn/api_gateway/controller/GatewayFallbackController.java)).
    - **Filtro customizado de borda:** [GatewayServerRateLimiterFilter.java](/api-gateway/src/main/java/br/ufrn/api_gateway/filter/GatewayServerRateLimiterFilter.java) (`OncePerRequestFilter`, `@Order(HIGHEST_PRECEDENCE)`), implementando Rate Limiter Server-side (`gatewayServerRateLimiter`).
+   - [rota info](ms1-orquestrator/src/main/java/br/ufrn/ms1_orquestrator/controller/AtendimentoController.java#L40-L44)
 2. **Demonstração**:
 ```bash
+# Ver configuração fornecida pelo config server
+curl -s "http://$CONFIG_IP:8888/api-gateway/default" | python3 -m json.tool
+
+# Acompanhar log em tempo real
+ssh -i "$KEY_PEM" "ec2-user@$GW_IP" \
+  "tail -n 60 -f /home/ec2-user/app/smartshop/app.log"
+
 curl -i -s "http://$GW_IP:8080/api/assistente/info"
 ```
 ---
@@ -151,6 +142,8 @@ curl -s -X POST "http://$GW_IP:8080/api/assistente/atendimento" \
 
 2. [LambdaClientConfig.java](/ms1-orquestrator/src/main/java/br/ufrn/ms1_orquestrator/config/LambdaClientConfig.java)
 
+3. [AtendimentoController.java](ms1-orquestrator/src/main/java/br/ufrn/ms1_orquestrator/controller/AtendimentoController.java#L55-L59)
+
 3. **Distributed Tracing (Micrometer Tracing + Zipkin):** (`http://<OBS_IP>:9411`)
 
 ---
@@ -184,13 +177,13 @@ curl -s -X POST "http://$GW_IP:8080/api/assistente/atendimento" \
 
 3. Demonstração:
 ```bash
-ssh -i "$KEY_PEM" -J "ec2-user@$GW_IP" ec2-user@10.30.1.10 \
+ssh -i "$KEY_PEM" "ec2-user@$OBS_IP" \
   "docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN='$VAULT_TOKEN' vault-trabalho3 vault kv get secret/ms2-ai-service"
 ```
 
 ---
 
-## Pontos 9, 10 e 11 + Fluxo Obrigatório (JMeter + Chaos Monkey + Observabilidade)*
+## Pontos 9, 10 e 11 + Fluxo JMeter + Chaos Monkey + Observabilidade*
 
 ### Fase A
 1. Confirmar que o Chaos Monkey está desligado no MS1 e MS2
@@ -207,7 +200,7 @@ curl -s http://$MS1_IP:8081/actuator/chaosmonkey/status
 ```bash
 curl -s -X POST "http://$MS2_IP:8082/actuator/chaosmonkey/assaults" \
   -H "Content-Type: application/json" \
-  -d '{"level":1,"latencyActive":false,"exceptionsActive":true,"killApplicationActive":false}' ; echo
+  -d '{"level":1,"latencyActive":false,"exceptionsActive":false,"killApplicationActive":true}' ; echo
 
 curl -s -X POST "http://$MS2_IP:8082/actuator/chaosmonkey/enable" ; echo
 ```
@@ -243,7 +236,12 @@ ssh -i "$KEY_PEM" -J "ec2-user@$GW_IP" ec2-user@10.30.1.15 \
 ---
 
 ## Ponto 12 — Rate Limiter e Bulkhead
-1. **Rate Limiter Server-Side no API Gateway :**
+```bash
+curl -s -X POST "http://$GW_IP:8080/actuator/refresh" ; echo
+curl -s -X POST "http://$MS1_IP:8081/actuator/refresh" ; echo
+curl -s -X POST "http://$MS2_IP:8082/actuator/refresh" ; echo
+```
+1.Rate Limiter Server-Side no API Gateway :
 ```bash
 for i in $(seq 1 35); do
   CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "http://$GW_IP:8080/api/assistente/atendimento" \
@@ -252,7 +250,7 @@ for i in $(seq 1 35); do
   echo "Req $i -> HTTP $CODE"
 done
 ```
-2. Rate Limiter Client-Side no MS1
+2.Rate Limiter Client-Side no MS1
 ```bash
 for i in $(seq 1 18); do
   ORIGEM=$(curl -s -X POST "http://$MS1_IP:8081/api/assistente/atendimento" \
@@ -262,7 +260,7 @@ for i in $(seq 1 18); do
   echo "Req $i -> $ORIGEM"
 done
 ```
-3. Rate Limiter Server-Side no MS2
+3.Rate Limiter Server-Side no MS2
 ```bash
 for i in $(seq 1 24); do
   OUT=$(curl -s -X POST "http://$MS2_IP:8082/graphql" \
@@ -271,12 +269,12 @@ for i in $(seq 1 24); do
   echo "Req $i -> $OUT"
 done
 ```
-4. Bulkhead no MS1
+4.Bulkhead no MS1
 ```bash
 # Liga latencia no MS2 (sem excecoes)
 curl -s -X POST "http://$MS2_IP:8082/actuator/chaosmonkey/assaults" \
   -H "Content-Type: application/json" \
-  -d '{"level":1,"latencyActive":true,"latencyRangeStart":2500,"latencyRangeEnd":3500,"exceptionsActive":false,"killApplicationActive":false}' ; echo
+  -d '{"level":1,"latencyActive":true,"latencyRangeStart":6000,"latencyRangeEnd":7000,"exceptionsActive":false,"killApplicationActive":false}' ; echo
 
 curl -s -X POST "http://$MS2_IP:8082/actuator/chaosmonkey/enable" ; echo
 
@@ -456,7 +454,7 @@ curl -s -X POST "http://$MS2_IP:8082/actuator/chaosmonkey/disable" ; echo
 
 # Garante MS1 e MS2 rodando
 for IP in 10.30.1.15 10.30.1.16; do
-  ssh -i "$KEY_PEM" -J "ec2-user@$GW_IP" "ec2-user@$IP" \
+  ssh -i "$KEY_PEM" "ec2-user@$MS1_IP" \
     "pgrep -f '[a]pp.jar' >/dev/null || sudo sh -c 'nohup setsid /var/lib/cloud/scripts/per-boot/start-smartshop.sh </dev/null >/home/ec2-user/app/smartshop/deploy.log 2>&1 &'"
 done
 ```
