@@ -200,7 +200,7 @@ curl -s http://$MS1_IP:8081/actuator/chaosmonkey/status
 ```bash
 curl -s -X POST "http://$MS2_IP:8082/actuator/chaosmonkey/assaults" \
   -H "Content-Type: application/json" \
-  -d '{"level":1,"latencyActive":false,"exceptionsActive":false,"killApplicationActive":true}' ; echo
+  -d '{"level":1,"latencyActive":false,"exceptionsActive":true,"killApplicationActive":false}' ; echo
 
 curl -s -X POST "http://$MS2_IP:8082/actuator/chaosmonkey/enable" ; echo
 ```
