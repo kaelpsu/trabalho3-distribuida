@@ -34,7 +34,7 @@ smartshop:
   resiliencia:
     ativa: false                        # Defina como false para desativar CircuitBreaker, RateLimiter, Retry e Bulkhead em testes de carga
   ia:
-    mock-mode: false                     # Defina como true para simular respostas do Gemini sem consumir cota da API em testes de estresse (JMeter)
+    mock-mode: true                    # Defina como true para simular respostas do Gemini sem consumir cota da API em testes de estresse (JMeter)
 
 # configuração base do Chaos Monkey para os serviços que rodarem com perfil 'chaos-monkey'
 chaos:
