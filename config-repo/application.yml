@@ -32,7 +32,7 @@ management:
 # Feature flags globais dinâmicas (atualizáveis em tempo de execução via POST /actuator/refresh)
 smartshop:
   resiliencia:
-    ativa: true                        # Defina como false para desativar CircuitBreaker, RateLimiter, Retry e Bulkhead em testes de carga
+    ativa: false                        # Defina como false para desativar CircuitBreaker, RateLimiter, Retry e Bulkhead em testes de carga
   ia:
     mock-mode: true                     # Defina como true para simular respostas do Gemini sem consumir cota da API em testes de estresse (JMeter)
 
