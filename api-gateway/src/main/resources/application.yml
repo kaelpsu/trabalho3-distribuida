@@ -4,7 +4,7 @@ spring:
   http:
     clients:
       imperative:
-        factory: jdk
+        factory: JDK
       connect-timeout: 5s
       read-timeout: 30s
   config:
